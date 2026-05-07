@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div class="bg-orb orb-1"></div>
+  <div class="bg-orb orb-2"></div>
   <header class="site-header">
     <div class="container nav-wrap">
       <a class="logo" href="#home">NB</a>
@@ -30,6 +32,7 @@
     <section class="hero section">
       <div class="container hero-grid">
         <div>
+          <p class="hero-pill">Building practical and creative projects</p>
           <p class="kicker">Undergraduate Student</p>
           <h1>Nischal Bhandari</h1>
           <p class="lead">
@@ -54,6 +57,7 @@
 
     <section id="about" class="section">
       <div class="container">
+        <p class="section-label">About</p>
         <h2>About Me</h2>
         <p>
           I am currently studying Bachelor of Information Technology at Victoria University. I enjoy turning ideas into simple websites and learning by building real projects. I am actively working on improving my coding, design sense, and software development workflow to become a strong developer in the coming years.
@@ -63,6 +67,7 @@
 
     <section id="skills" class="section">
       <div class="container">
+        <p class="section-label">Expertise</p>
         <h2>Skills</h2>
         <p class="section-note">Suggested starter skills (keep the ones you know, remove the ones you do not):</p>
         <div class="chip-grid">
@@ -80,6 +85,7 @@
 
     <section id="projects" class="section">
       <div class="container">
+        <p class="section-label">Portfolio</p>
         <h2>Projects</h2>
         <div class="card-grid">
           <article class="card">
@@ -111,6 +117,7 @@
 
     <section id="gallery" class="section">
       <div class="container">
+        <p class="section-label">Showcase</p>
         <h2>Zoo Project Gallery</h2>
         <p class="section-note">Screenshots from my 3D Zoo game work.</p>
         <div class="gallery-grid">
@@ -132,6 +139,7 @@
 
     <section id="education" class="section">
       <div class="container">
+        <p class="section-label">Background</p>
         <h2>Education</h2>
         <article class="card single">
           <h3>Victoria University</h3>
@@ -142,20 +150,41 @@
 
     <section id="contact" class="section">
       <div class="container">
+        <p class="section-label">Contact</p>
         <h2>Contact</h2>
-        <div class="contact-grid">
-          <a class="contact-card" href="mailto:xettrinischal2005@gmail.com">
-            <h3>Email</h3>
-            <p>xettrinischal2005@gmail.com</p>
-          </a>
-          <a class="contact-card" href="https://www.linkedin.com/in/nischal-bhandari05" target="_blank" rel="noreferrer">
-            <h3>LinkedIn</h3>
-            <p>linkedin.com/in/nischal-bhandari05</p>
-          </a>
-          <a class="contact-card" href="https://github.com/Nischal0203" target="_blank" rel="noreferrer">
-            <h3>GitHub</h3>
-            <p>github.com/Nischal0203</p>
-          </a>
+        <p class="section-note">Send me a message directly from here. It goes to my email inbox.</p>
+        <div class="contact-layout">
+          <div class="contact-grid">
+            <a class="contact-card" href="https://www.linkedin.com/in/nischal-bhandari05" target="_blank" rel="noreferrer">
+              <h3>LinkedIn</h3>
+              <p>linkedin.com/in/nischal-bhandari05</p>
+            </a>
+            <a class="contact-card" href="https://github.com/Nischal0203" target="_blank" rel="noreferrer">
+              <h3>GitHub</h3>
+              <p>github.com/Nischal0203</p>
+            </a>
+            <div class="contact-card">
+              <h3>Email</h3>
+              <p>xettrinischal2005@gmail.com</p>
+            </div>
+          </div>
+
+          <form class="contact-form" action="https://formsubmit.co/xettrinischal2005@gmail.com" method="POST">
+            <input type="hidden" name="_subject" value="Portfolio Contact Message">
+            <input type="hidden" name="_captcha" value="false">
+            <input type="hidden" name="_template" value="table">
+
+            <label for="name">Name</label>
+            <input id="name" name="name" type="text" placeholder="Your name" required>
+
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" placeholder="your@email.com" required>
+
+            <label for="message">Message</label>
+            <textarea id="message" name="message" rows="5" placeholder="Write your message..." required></textarea>
+
+            <button class="btn primary" type="submit">Send Message</button>
+          </form>
         </div>
       </div>
     </section>

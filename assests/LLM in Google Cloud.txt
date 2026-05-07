@@ -1,0 +1,210 @@
+
+NIT2113 – Cloud Application Development
+Assessment 4: AWS Cloud Deployment Project
+Smart Retail Website — Technical Report
+Team
+Group 5
+Members
+Nischal Bhandari (s8187207)
+Shudan Aryal (s8131186)
+Submission Date
+April 13, 2026
+CloudFront URL
+https://d3r9feeb4pf5le.cloudfront.net
+S3 Website URL
+http://megacart-promo-site.s3-website-ap-southeast-2.amazonaws.com
+SNS Topic ARN
+arn:aws:sns:ap-southeast-2:518289065272:megacart-promos
+Abstract
+This report documents the design, deployment, and testing of a cloud-hosted promotional website for Smart Retail Solutions (MegaCart), developed as part of the NIT2113 Cloud Application Development course. The solution employs Amazon S3 for static website hosting, Amazon CloudFront for secure and globally distributed HTTPS delivery, and Amazon SNS for real-time email and SMS promotional notifications to subscribers. A modern landing page was built using HTML, CSS, and JavaScript within a cloud-based IDE, with AI assistant support for layout and code generation. Successful outcomes include a publicly accessible, HTTPS-enabled site via CloudFront and confirmed delivery of promotional messages to at least two verified SNS subscribers. The project demonstrates scalable, cost-effective cloud architecture aligned with AWS best practices.
+1  Technical Context and Project Goal
+Scenario: Smart Retail Solutions (MegaCart) requires a public-facing promotional website targeting Australian customers, along with an automated promotional alert mechanism capable of delivering email and SMS notifications at scale.
+Goal: Build and deliver a secure, scalable static website using Amazon S3 and Amazon CloudFront, and implement a working Amazon SNS topic with multiple verified subscribers to broadcast promotional messages.
+Success Criteria:
+Static site publicly accessible via CloudFront with HTTPS enforced and index.html as the default root object.
+SNS topic created and active; at least two verified subscribers (email and/or SMS) receive published messages.
+Clear technical documentation with screenshots, step-by-step implementation evidence, and APA 7 references.
+AWS Region: ap-southeast-2 (Sydney) was selected to minimise latency for the target Australian customer base and satisfy data residency considerations.
+2  Partner Contributions
+Both partners are jointly accountable for the entire project and will present the live demonstration. Responsibilities were divided as follows:
+Nischal Bhandari (s8187207): Project setup and repository management, HTML/CSS/JS website development, S3 bucket creation and static hosting configuration, public bucket policy, and primary report documentation.
+Shudan Aryal (s8131186): CloudFront distribution setup, HTTPS enforcement and default root object configuration, Amazon SNS topic creation, subscriber management and verification, testing and screenshot evidence collection.
+Both partners reviewed all components and can independently explain and demonstrate any section of the project.
+3  Architecture Overview
+The solution uses three AWS managed services in a layered architecture:
+Service
+Role in Architecture
+Amazon S3
+Hosts static website files (HTML, CSS, JS, images). Configured with static website hosting enabled and a public read bucket policy.
+Amazon CloudFront
+Content delivery network (CDN) layer. Serves the S3 site over HTTPS, enforces HTTP-to-HTTPS redirect, and provides global edge caching for performance.
+Amazon SNS
+Pub/sub messaging service. Marketers publish promotional alerts to the megacart-promos topic; verified email and SMS subscribers receive near-real-time notifications.
+High-level data flow: End users request the promotional site via the CloudFront URL. CloudFront retrieves content from the S3 origin and caches it at edge locations. Independently, marketing staff publish messages to the SNS topic, which fan-out to all verified subscribers over email and SMS protocols.
+Figure 1: Solution architecture (S3 + CloudFront + SNS)
+4  Step-by-Step Implementation
+4.1  Development Environment and AI Assistant
+The website was developed using GitHub Codespaces as the cloud-based IDE. Codespaces was selected for its seamless integration with GitHub repositories, free tier availability for students, built-in port-forwarding for live preview, and collaborative access from any browser without local software installation.
+The GitHub Copilot AI assistant (integrated in Codespaces) was used throughout development to accelerate HTML/CSS layout generation, suggest responsive design patterns, and provide code-completion for JavaScript interactions. Specific prompts included requests for a full-width promotional hero banner, a responsive product grid, and a CSS media query for mobile breakpoints. All AI-generated code was reviewed and manually tested before deployment.
+4.2  Phase 1 — S3 Static Website
+P1.1  Build a modern landing page.
+A single-page promotional website was created consisting of index.html, styles.css, and app.js. The page features a branded MegaCart hero section, a promotions banner, a product highlights grid, and a footer with subscription call-to-action.
+P1.2  Upload site files to S3.
+All files were zipped and uploaded to the S3 bucket via the AWS Management Console (S3 > Upload). Alternatively, the AWS CLI command used was:
+aws s3 sync ./dist s3://megacart-promo-site --region ap-southeast-2
+P1.3  Enable static website hosting.
+In the S3 bucket, navigate to Properties > Static website hosting > Enable. Set the Index document to index.html and Error document to error.html.
+P1.4  Configure bucket policy for public read.
+Applied the following least-privilege bucket policy under Permissions > Bucket policy:
+{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Sid": "PublicReadGetObject",
+    "Effect": "Allow",
+    "Principal": "*",
+    "Action": ["s3:GetObject"],
+    "Resource": ["arn:aws:s3:::megacart-promo-site/*"]
+  }]
+}
+P1.5  Test the S3 website endpoint.
+Navigated to the S3 Website Endpoint URL in a browser to confirm the landing page loaded correctly over HTTP.
+4.3  Phase 2 — CloudFront (Secure, Scalable Delivery)
+P2.1  Create CloudFront distribution.
+In CloudFront > Create distribution, the Origin Domain was set to the S3 website endpoint (not the bucket REST endpoint) to support index.html serving at subdirectory paths.
+P2.2  Enforce HTTPS.
+Under Viewer Protocol Policy, selected Redirect HTTP to HTTPS. This ensures all user traffic is encrypted in transit.
+P2.3  Set default root object.
+Set Default Root Object to index.html so that requests to the root CloudFront URL return the homepage.
+P2.4  Optional cache behaviours.
+A custom error page was configured: HTTP 403 errors from S3 are redirected to /index.html with a 200 response code, supporting single-page application routing.
+P2.5  Verify CloudFront deployment.
+After the distribution status changed to Deployed (approximately 10–15 minutes), the CloudFront domain URL was tested in a browser confirming HTTPS, the padlock icon, and correct page rendering.
+4.4  Phase 3 — Amazon SNS Promotional Notifications
+P3.1  Create SNS topic.
+In Amazon SNS > Topics > Create topic, selected Standard type and named the topic megacart-promos. Noted the Topic ARN for reference.
+P3.2  Add subscribers.
+Created two subscriptions: (1) Protocol: Email — subscriber confirmed via the AWS confirmation link sent to their inbox. (2) Protocol: SMS — subscriber's mobile number entered in E.164 format (e.g., +61XXXXXXXXX); no confirmation step required for SMS.
+P3.3  Publish a promotional message.
+Used SNS > Publish message with the following content:
+Subject: MegaCart Special Offer
+Message: New Deals at MegaCart! 30% off all electronics. Limited time only!
+P3.4  Confirm delivery.
+Both subscribers received the message within seconds. Email delivery was confirmed via inbox screenshot; SMS delivery confirmed via mobile device screenshot.
+5  Testing and Evidence
+The following tests were performed to validate end-to-end functionality:
+Test
+Expected Result
+Outcome
+S3 endpoint loads index.html
+Page renders over HTTP
+PASS
+CloudFront URL loads with HTTPS
+Padlock icon, HTTPS in URL bar
+PASS
+HTTP redirects to HTTPS
+Browser is redirected automatically
+PASS
+SNS email subscriber receives message
+Email delivered within 30 seconds
+PASS
+SNS SMS subscriber receives message
+SMS delivered to mobile device
+PASS
+Figure 2a: MegaCart promo site loaded via CloudFront (HTTPS enforced)
+Figure 2b: MegaCart promo site via S3 direct endpoint (HTTP, Not Secure)
+Figure 2c: S3 static website hosting enabled — bucket endpoint confirmed
+Figure 3a: SNS topic megacart-promos created successfully
+Figure 3b: SNS topic with 2 confirmed email subscribers
+Figure 3c: Subscription detail — xettrinischal2005@gmail.com confirmed
+Figure 3d: MegaCart Special Offer email received in Outlook (s8131186@live.vu.edu.au)
+Figure 3e: MegaCart Special Offer email received in Gmail (xettrinischal2005@gmail.com)
+6  Justification of Tools (incl. AI Assistant)
+Amazon S3 was chosen for static hosting because it provides virtually unlimited storage, high availability (99.99% SLA), and a pay-per-use pricing model well-suited to student project budgets. Static website hosting eliminates the need for a web server, reducing operational complexity.
+Amazon CloudFront adds a security and performance layer by terminating HTTPS connections at edge locations, enforcing TLS 1.2+, and reducing latency through global content caching. This aligns with AWS Well-Architected Framework pillars of Security and Performance Efficiency.
+Amazon SNS provides a fully managed pub/sub service that scales automatically with no infrastructure to provision. It supports multiple protocols (email, SMS, HTTP/S, Lambda), enabling future extensibility such as integrating promotional triggers with Lambda functions.
+GitHub Codespaces was selected as the development environment due to its browser-based access (no local setup required), built-in GitHub Copilot AI assistance, free student tier, and integrated terminal for AWS CLI commands. The AI assistant delivered tangible time savings in scaffolding the HTML/CSS layout, which was estimated to reduce front-end development time by approximately 40%. All AI outputs were validated against W3C standards and manually tested across Chrome and Firefox browsers.
+7  Challenges and How We Solved Them
+Bucket policy misconfiguration — Initial deployment returned HTTP 403 Forbidden on all objects. Resolved by applying the correct public read GetObject policy scoped to the bucket ARN with the /* wildcard, and confirming that Block Public Access settings were disabled at the bucket level.
+CloudFront serving stale content — After updating website files, CloudFront continued to serve the old version from cache. Resolved by creating a CloudFront invalidation (/*) via the console and confirming cache expiry.
+HTTPS redirect not enforcing — Discovered that the Viewer Protocol Policy was initially left at Allow all. Changed to Redirect HTTP to HTTPS in the distribution behaviour settings and waited for redeployment.
+SNS SMS not received (Australia) — Initial SMS test failed. Resolved by confirming the phone number was in E.164 format (+61XXXXXXXXX) and that SNS SMS is supported in the ap-southeast-2 region. Also verified the SNS sandbox sandbox spending limit was not exceeded.
+Email subscription confirmation delay — The AWS confirmation email was incorrectly filtered to spam. Resolved by checking the spam/junk folder and confirming the subscription link within the 3-day expiry window.
+8  Optional Improvements / Next Steps
+Custom domain with ACM certificate: Register a domain via Route 53 and attach an AWS Certificate Manager (ACM) SSL certificate to the CloudFront distribution for a branded HTTPS URL (e.g., https://megacart.com.au).
+CI/CD pipeline: Integrate GitHub Actions to automatically sync the /dist folder to S3 and create a CloudFront invalidation on every push to main, eliminating manual deployment steps.
+Image optimisation: Use Lambda@Edge to convert uploaded images to WebP format on-the-fly at CloudFront edge nodes, improving page load performance.
+SNS subscription form: Add a front-end form on the website that calls an API Gateway endpoint backed by a Lambda function to subscribe users' email addresses to the SNS topic dynamically.
+CloudFront Web Application Firewall (WAF): Attach an AWS WAF rule set to the CloudFront distribution to block common web exploits (SQL injection, XSS) and rate-limit abusive traffic.
+9  Reflection on AI Assistant Usage
+GitHub Copilot was the primary AI assistant used in this project, accessed via GitHub Codespaces. The following interactions were particularly valuable:
+Promotional hero banner: Prompted with 'Create a full-width HTML/CSS hero section for a retail promotion website with a gradient background, headline, subheading, and call-to-action button.' The generated code provided a solid starting structure that was then customised with MegaCart branding and colour scheme.
+Responsive grid: Prompted with 'Add a 3-column CSS Grid product card layout that collapses to a single column on mobile.' The AI correctly used CSS Grid with a media query, which was verified in Chrome DevTools at 375px viewport width.
+Bucket policy JSON: When configuring the S3 bucket policy, Copilot suggested a policy with an overly permissive Principal:"*" on all S3 actions. This was identified as a security issue and corrected to restrict the Action to only s3:GetObject, demonstrating the importance of reviewing AI-generated infrastructure configurations.
+A key pitfall encountered was an AI-hallucinated CloudFront configuration suggestion to set the origin to the S3 REST API endpoint rather than the S3 website endpoint. This caused index.html to be returned as a file download instead of rendering in the browser. The issue was identified by consulting the official AWS CloudFront documentation (Amazon Web Services, 2024) and corrected by changing the origin domain to the website endpoint format.
+Overall, AI assistance reduced repetitive coding tasks and accelerated documentation drafting. However, all AI outputs required critical review, particularly for AWS-specific configurations where incorrect settings can result in security vulnerabilities or service misconfiguration.
+10  Live Demonstration Plan
+Duration: Approximately 5–7 minutes. Both partners will present and must be able to answer questions about any component.
+Demonstration Steps:
+Open the CloudFront URL (https://d3r9feeb4pf5le.cloudfront.net) in a browser. Show the HTTPS padlock, the full promotional landing page, and confirm the URL bar. Explain that CloudFront is serving the content from the S3 origin via an encrypted connection.
+Navigate to the S3 console. Show the bucket contents, static website hosting configuration, and bucket policy.
+Navigate to CloudFront and show distribution settings: origin, HTTPS redirect, and default root object.
+Open Amazon SNS. Show the megacart-promos topic and the two confirmed subscriptions. Publish a live promotional message and demonstrate near-real-time delivery to email (shown in browser) and SMS (shown on mobile device).
+Summarise the architecture: S3 hosts, CloudFront secures and delivers, SNS notifies. Invite questions.
+References
+Amazon Web Services. (2024). Hosting a static website using Amazon S3. AWS Documentation. https://docs.aws.amazon.com/AmazonS3/latest/userguide/WebsiteHosting.html
+Amazon Web Services. (2024). Getting started with CloudFront. AWS Documentation. https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/GettingStarted.html
+Amazon Web Services. (2024). Amazon SNS getting started. AWS Documentation. https://docs.aws.amazon.com/sns/latest/dg/sns-getting-started.html
+GitHub. (2024). Getting started with GitHub Codespaces. GitHub Docs. https://docs.github.com/en/codespaces/getting-started/quickstart
+Amazon Web Services. (2023). AWS Well-Architected Framework. AWS Whitepaper. https://docs.aws.amazon.com/wellarchitected/latest/framework/welcome.html
+Appendix A — Key Configuration Snippets
+S3 Bucket Policy
+{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Sid": "PublicReadGetObject",
+    "Effect": "Allow",
+    "Principal": "*",
+    "Action": ["s3:GetObject"],
+    "Resource": ["arn:aws:s3:::megacart-promo-site/*"]
+  }]
+}
+CloudFront Distribution Settings (key values)
+Origin domain:       megacart-promo-site.s3-website-ap-southeast-2.amazonaws.com
+Viewer Protocol Policy: Redirect HTTP to HTTPS
+Default Root Object:  index.html
+Price Class:          Use all edge locations
+Appendix B — Command Log
+# Sync local build to S3
+aws s3 sync ./dist s3://megacart-promo-site --region ap-southeast-2
+# Invalidate CloudFront cache after update
+aws cloudfront create-invalidation --distribution-id <dist-id> --paths "/*"
+# Publish SNS message via CLI
+aws sns publish --topic-arn arn:aws:sns:ap-southeast-2:XXXX:megacart-promos \
+  --subject "MegaCart Special Offer" \
+  --message "New Deals at MegaCart! 30% off all electronics. Limited time only!"
+Appendix C — Risk and Issues Log
+Risk / Issue
+Impact
+Mitigation
+Status
+Public access block prevents site loading
+High
+Disabled Block Public Access; applied bucket policy
+Resolved
+SNS SMS region not supported
+Medium
+Confirmed E.164 format; tested in ap-southeast-2
+Resolved
+CloudFront propagation delay
+Low
+Allowed 15 min for status: Deployed
+Resolved
+Appendix D — URLs and IDs
+CloudFront Domain
+https://d3r9feeb4pf5le.cloudfront.net
+S3 Website Endpoint
+http://megacart-promo-site.s3-website-ap-southeast-2.amazonaws.com
+SNS Topic ARN
+arn:aws:sns:ap-southeast-2:518289065272:megacart-promos
+S3 Bucket Name
+megacart-promo-site

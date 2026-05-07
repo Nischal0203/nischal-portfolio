@@ -1,0 +1,172 @@
+
+Unit Code & Name: NIT2102 Cyber Security Essentials
+Project Title: Brute Force Attack on DVWA login page
+Student Name: Nischal Bhandari
+Student Id:
+Submission Date:
+Executive Summary
+Brute force attack is a common technique used for password cracking, where attackers employ a refined strategy to bypass traditional security measures. This report demonstrates an attack on the (D)DVWA login page at the medium level, utilizing the Burp Suite Intruder to exploit the login page. The DVWA is an insecure and frequently targeted simulation in a penetration test. The solution incorporates a custom login rate-limiting mechanism within the DVWA medium.php, where a session-based lockout system logic is used. Fail2Ban is configured to monitor Apache logs and automatically ban IP addresses for suspicious logins.  
+All these changes show a practical strategy that is aligned with the NIST Cybersecurity Framework NIST SP 800-53 (AC-7, AU-6) and (PR.AC-7, DE.CM-7), which enforces restricted login attempts, active monitoring, and audit of unsuccessful logins CITATION NIS18 \l 1033  (NIST, 2018). It also complies with the ISO/IEC 27001:2022 control framework controls, including A.5.15 (Authentication Information)  CITATION ism221 \l 1033 (isms, 2022) and A.8.12 (Event logging) CITATION ism22 \l 1033  (isms, 2022), which ensures robust access control with real-time threat detection. 
+Threat Analysis and Research
+Problem Statement:
+A brute-force attack uses a trial-and-error process to crack passwords, gain unauthorized access, and encrypt keysCITATION For253 \l 1033  (Fortinet, 2025).  This attack is still one of the prevalent attacks, especially in the web application environment. Research shows a 12% rise in brute-force cyberattack techniques CITATION Sec24 \l 1033  (Staff, 2024).  OWASP warns that login interfaces are likely to be targeted if they attempt unlimited attempts, as attackers these days automate billions of guesses for success CITATION Esh25 \l 1033  (Esheridan, 2025). Industries that are exposed to login interfaces like financial services, government, and healthcare are most likely to be attacked. 
+Threat Impact: Real World Example
+In January 2025, Shadowserver Foundation observed a rise in brute force attacks where web login pages of various network security devices, such as Palo Alto Networks, SonicWall, and Ivanti, were targetedCITATION Ern25 \l 1033  (Naprys, 2025). There were 2.8 million daily unique IP source addresses targetedCITATION Bur25 \l 1033  (Burt, 2025).  Another example, 2017 brute force on WordPress, where the XML-RPC multicall method was used to submit hundreds of login attempts in a single request. Over 1900,000 WordPress sites were affected within days, which shows a lack of IP rating limit and disabling unnecessary APIs. 
+Current Security Gaps
+Although the awareness organizations remain vulnerable to brute force due to inadequate implementation of the defensive controls:
+Lack of Rate Limiting or Account Lockouts: An Attacker can attempt multiple credential combinations as the system is not hardened with proper request throttling and lockout policy. 
+Weak or Reused Credentials: Most of the time, users are highly reliant on predictable passwords like admin123, which are very easy to crack.
+Inconsistent MFA: MFA helps render brute force attempts, though the username or password is guessed correctly.
+Poor Logging and Monitoring: Most of the organizations lack centralized logging or auditing, which results in undetected brute force attempts.
+Captcha: This helps to verify and prevent bots from continuing brute-force attacks when two or three failed attempts are made. 
+Advances in Threat Mapping and Compliance Gaps
+MITRE ATTACK MAPPING
+MITRE ATT&CK framework classifies brute force in the following:
+T1110-Brute Force: This covers common brute force attempts on authentication services like SSH, web formsCITATION MIT \l 1033  (MITRE, 2025).
+T1078: Valid Accounts: Adversaries use the compromised credentials for maintaining access without detection. 
+T1589-Gather Victim Identity Information: This covers collecting leaked credentials or usernames, which is used in coordination with brute force. 
+Advanced Persistent Threat (APT) Activity
+APT28 (Fancy Bear): This Russian-based APT group is popular for doing brute force attacks like password spraying against email services CITATION MIT24 \l 1033 (MITRE, 2024).
+Agrius: This Iranian-linked APT group is part of brute force using (Server Message Block) SMB in the environment of the victim CITATION MIT \l 1033 (MITRE, 2025). 
+Compliance Gaps
+PCI-DSS 4.0 (Req 8.3.6): It requires an account lockout when a specific defined number of failed login attempts are fulfilled, which is misconfigured by organizations.
+ISO 27001: This states that an organization must build in and implement a proper audit trail or an incident report mechanism. 
+Security Solution Design
+3.1 Proposed Solutions:
+To secure the login page against any kind of brute force attack, a multi-layered security tactic was deployed. 
+Fail2Ban (IP Ban on Repeated Failures)
+This is deployed on the DVWA server, which is used to automate the banning of malicious IPs after detecting multiple failed login attempts. The custom DVWA log file can be watched at (/var/log/dvwa_login.log).
+PHP session-based lockout and logs: 
+This logic is used to ban a specific user after multiple failed attempts. New modifications are made where the failed login attempts are tracked through PHP $_SESSION ['attempts']. Every failed attempt is logged to /var/log/dvwa_login.log. It also introduces a sleep () delay after 3 failed attempts and shows an error message like “Too many failed attempts”. Custom logging and log monitoring are implemented for brute-force detection. 
+Apache2: 
+This helps to access the log and helps them to track in real-time visibility.
+3.2 Tools and technologies
+Tools
+Layer
+Purpose
+DVWA
+Application
+Vulnerable Web app to test scenario.
+Apache2
+Web Server
+Web server hosting DVWA and a log provider
+Fail2Ban
+Network Security
+Detect and block repeated failed login attempts.
+Apache and Custom DVWA logs
+Monitoring 
+Monitors and logs (e.g., tail, cat)
+PHP (medium.php)
+Application
+Application-side brute force lockout logic.
+3.3 Workflow
+Brute Force Attack: An attacker uses tools like Burp Suite or Hydra from Kali Linux and conducts a brute-force attack where multiple login requests are sent with different credentials to the DVWA login form, i.e., medium.php. 
+DVWA Process Request: All login requests are handled by the medium.php script. When a PHP session is started or resumed, the number of failed login attempts is tracked in $_SESSION[‘attempts’]. 
+PHP session Lockout Triggered: After each failed login attempt it displays “Login failed#1”, etc., and after the 5th wrong attempt, it delays using sleep (5). The failed login is logged in the custom file /var/log/dvwa_login.log. 
+Fail2ban Detection: It monitors the custom log where failregex is used to detect repeated failures from the same IP. As the attackers fail 5 attempts in 10 minutes using attack through tools like Hydra, the firewall rule is triggered to ban the IP using iptables.
+Blocked Attacker at Network Layer: The attacker can't connect or open DVWA anymore.
+User Recover and Feedback: The delay is short, and after the session reset the attempt counter resets. Both banned IPs via Fail2Ban are automatically unbanned after the configured ban time. 
+Implementation and Testing 
+Tools Used: 
+Testing and Simulated Tools
+Damn Vulnerable Web Application (DVWA): This is the targeted application which is used for this project. This web app is knowingly insecure, and here the Brute force module set to level medium is the focus.  
+Kali Linux: This is an attacker machine platform to simulate brute force attempts.
+Burp Suite: This is used to intercept and automate HTTP requests, where a brute force attack is simulated.
+Linux CLI Utilities: Nano, tail, cat, and chmod are used for configuring files, monitoring logs, and setting permissions. 
+Defensive Tools
+Fail2Ban: Detects and monitors failure logs and blocks attacker IPs via firewall rules.
+PHP (medium.php): It implements session-based tracking after multiple failures. 
+Apache2: Helps to host the DVWA web application and provide access/error logs.
+Iptables: It implements IP bans initiated by Fail2Ban. 
+Custom Log File: Helps to capture structured failed login attempts to analyze and ban purpose. 
+Configuration Steps:
+Fail2ban Setup
+Step 1: Installation Command: sudo apt install fail2ban
+Step 2: Jail Config
+Command: sudo nano /etc/fail2ban/jail.local
+Here, the ignoreself = makes fail2ban ban own system IP (127.0.0.1) as local attempts are made from Burp Suite on localhost. Ignoreip = is empty because no IP are ignored. Once an IP exceeds the entry limit it will be banned for 10 minutes. It also looks at a 10-minute window, so if 5 failed attempts are allowed if exceeds the IP gets banned within 10 minutes. Custom jail named [dvwa-brute] is enabled so that it can monitor DVWA by checking the Apache log file /var/log/apache2/access.log for suspicious login attempts.  If there are 3 failed login IP is banned for 1 hour, and it uses filter file dvwa.brute.conf for failed login pattern detection, which is applied to both HTTP and HTTPS traffic. 
+Step 3: Code Changes and Edit
+Command: sudo mousepad /etc/fail2ban/jail.conf
+Here the lines 85, 87, and 92, 95 have been removed to avoid config conflicts. 
+Step 4: Filter Config
+Command: sudo mousepad /etc/fail2ban/filter.d/dvwa-brute.conf  
+Here, the failregex defines a pattern to match an HTTP GET request that targets the vulnerable DVWA brute-force URL/DVWA/vulnerabilities/brute. The <HOST> acts as a placeholder used by Fail2Ban to extract the IP address of the attacker from Apache logs. The ignoreregx is empty as no request are excluded from detection.
+Step 5: Restart Fail2ban
+Command: Sudo systemctl restart fail2ban
+PHP Modification (Rate Limiting)
+Step 1: Default Medium.php
+Command: sudo nano /var/www/html/DVWA/vulnerabilities/brute/source/medium.php
+Step 2: Change in Medium.php
+Here, this uses a session-based tracking where $max_attempts =5 within 5 minutes $ban_time = 300, where after 3 to 5 attempts it says “Too many failed attempts. Try again in X seconds”. Now, until the lockout passes, no further login attempts are accepted.
+Key features:
+Password hashing: MD5 is used to hash passwords before checking against the database.
+Login Tracking: After a failed attempt, increments $_SESSION[‘attempts’]. Time is recorded and logs details like IP address in/var/log/dvwa_login.log. Displays “Login failed. Attempt #X”. It delays the next step by sleep (2) to automate brute-force attacks.
+Step 3: Log File Setup
+Command: sudo touch /var/log/dvwa_login.log
+This creates a new log file named dvwa_login.log inside the /var/log/ directory. 
+Command: sudo chmod 666 /var/log/dvwa_login.
+This sets the permission to rw-rw-rw- meaning Owner, Group, and others can read and write. This allows PHP script to write logs into file without any permission errors.
+Step 4: Restart mysql
+Command: sudo systemctl restart mysql2.3 Testing Methodology
+Test 1: Fail2Ban
+Step 1: Using Burp Suite for attack
+Step 2: Check log
+Command sudo tail -f /var/log/fail2ban.log
+Here, the latest Fail2ban log entries are shown in real time. This helps to monitor if the IP is banned or unbanned on failed attempts and is useful for troubleshooting. 
+Command: sudo fail2ban-regex /var/log/apache2/access.log /etc/fail2ban/filter.d/dvwa-brute.conf   Here, the command tests if the fail2ban filter (dvwa-brute.conf) correctly detects failed login attempts as it scans the Apache access log. The filter pattern can be verified. 
+Command: sudo fail2ban-client status dvwa-brute
+This command checks the status of the Fail2Ban jail named dvwa-brute. 
+Once the website is tried to be opened, the browser shows “Unable to connect” to 127.0.0.1 on the DVWA brute force page, meaning it has banned the local IP (127.0.0.1). Test 2: PHP Modification (Rate Limiting)
+Step 1: Random credentials, which were a wrong username and password, were used for login.
+Step 2: Check Logs 
+Command: cat /var/log/dvwa_login.log
+This displays the full content of the log file at once.
+Command: tail -f /var/log/dvwa_login.log
+This will continuously monitor the log file in real-time, and if new entries are added, you will see them instantly in the terminal.
+Step 3: Crashed website
+Now the website is no longer available.
+Ethical and Legal Considerations
+The brute force attack and defense is performed and tested on the sandbox DVWA instance, which is a purpose-built training platform where testing is authorized. NO production system or user data was affected, in line with the Australian Privacy Act and outlined by the ACS Code of Ethical Standards. Destructive activities were avoided.
+Compliance Standards
+GDPR: The GDPR Article 32 mandates the use of appropriate technical and organizational measures for personal data protection CITATION aro23 \l 1033  (Weismann, 2023). Although DVWA is a simulated environment, this project avoids real user data, logs only anonymized IP headers, and avoids unauthorized data exposure during brute force. 
+PCI-DSS (Requirement 8.1.6): These mandates require maintaining account lockout after multiple failed login attempts to prevent unauthorized access. Although DVWA does not store financial data, this project draws its inspiration from PCI-DSS, as it applies strong access controls and logs attempts, and monitors for intrusion as recommended. 
+Results and Future Improvement
+Effective Metrics
+This multi-layered defense strategy has significantly reduced the impact of brute force on the DVWA login page.
+Metric
+Result
+Detection Rate
+100% brute force attempts are detected via PHP logging and Fail2ban.
+Response Time
+IP is banned instantly after 5 failed attempts.
+PHP Throttling
+5-second delay after the 3 failed attempts. 
+IP ban Accuracy
+No false positive; the attacker's IP is only banned. 
+Brute-Force Success
+0% success rate during the Hydra test
+Log Visibly
+All attempts are logged clearly to perform analysis. 
+Limitations
+Despite the implementation of proven effectiveness in the lab setup, several constraints are still identified. The list is provided below:
+Session Scope: The session-based tracking can be easily bypassed with the cookie clearer or proxy rotation. 
+Fail2Ban limitation: As it is reactive and log-based, the attacks cannot be detected in the encrypted payloads until the attacker vector is revealed. There is no CAPTCHA or MFA integrated.
+Single Host Deployment: This test is on the DVWA server, but in the real world, a load-balanced application requires log collection and distributed Fail2ban and firewall control. 
+Future Improvement
+Captcha: Due to time limitations, Captcha was not implemented. But introducing it after a few failed attempts would have blocked unsophisticated bots.
+Stronger Password Hash: Modern slow hashes like bcrypt/argon2 need to be implemented so that even if attackers obtain hashes, the slow hashing algorithm will buy time against offline attacks.
+AI enhancement: The current system flow uses statistical thresholds, meaning after 5 attempts, a 5-minute ban. This can be improved by integrating machine learning models like One-Class SVM that can dynamically assess patterns of login requests. 
+Scalability: Although this works well on a small-scale testbed Apache with ModSecurity can be used across all services. A SIEM system like Wazuh or Splunk can be enabled for real-time alerts from Fail2ban and ModSecurity across the distributed environment. 
+References
+ BIBLIOGRAPHY Burt, J. (2025, February 10). Attackers Use 2.8 Million Devices in Major Brute Force Attack. Retrieved March 24, 2025, from Security Boulevard: https://securityboulevard.com/2025/02/attackers-use-2-8-million-devices-in-major-brute-force-attack/
+Esheridan. (2025). Blocking Brute Force Attacks. Retrieved from https://owasp.org/www-community/controls/Blocking_Brute_Force_Attacks#:~:text=A%20common%20threat%20web%20developers,force%20attack
+Fortinet. (2025). What Is A Brute Force Attack? Retrieved March 28, 2025, from Fortinet: https://www.fortinet.com/resources/cyberglossary/brute-force-attack
+isms. (2022). ISO 27001:2022 Annex A 5.15 – Access Control. Retrieved from https://www.isms.online/iso-27001/annex-a/5-15-access-control-2022/
+isms. (2022). ISO 27001:2022 Annex A 8.12 – Data Leakage Prevention. Retrieved 2024, from https://www.isms.online/iso-27001/annex-a/8-12-data-leakage-prevention-2022/
+MITRE. (2024). APT28. Retrieved from MITRE : https://attack.mitre.org/groups/G0007/
+MITRE. (2025). Brute Force. Retrieved from MITRE : https://attack.mitre.org/techniques/T1110/
+Naprys, E. (2025). Over 2 million IPs bombard edge network devices in ongoing brute force login attack. Retrieved March 25, 2025, from https://cybernews.com/security/over-2-million-ips-attacking-edge-network-device/
+NIST. (2018). Security and Privacy Controls for Information Systems and Organizations. Retrieved 2025, from https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-53r5.pdf
+Staff, S. (2024). There was a 12% increase in brute force cyberattack techniques in 2024. Retrieved March 24, 2025, from https://www.securitymagazine.com/articles/101081-there-was-a-12-increase-in-brute-force-cyberattack-techniques-in-2024
+Toulas, B. (2025, February 8). Massive brute force attack uses 2.8 million IPs to target VPN devices. Retrieved March 24, 2025, from https://www.bleepingcomputer.com/news/security/massive-brute-force-attack-uses-28-million-ips-to-target-vpn-devices/
+Weismann, a. (2023, September 26). Why Do Penetration Testing for GDPR? Article 32 & Much More. Retrieved from Network Assured: https://networkassured.com/compliance/penetration-testing-for-gdpr/#:~:text=Article%2032%20of%20the%20GDPR,vis%20risk
